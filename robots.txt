@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://meirelesth.github.io/Renata-Bogea/sitemap.xml
