@@ -172,6 +172,41 @@
     }
   }
 
+  /* vídeo ampliado: abre em tela cheia, com som e controles */
+  const modal = $('#videoModal');
+  const btnAmpliar = $('.hero-ampliar');
+  if (modal && btnAmpliar && video) {
+    const videoGrande = $('video', modal);
+    const fonte = $('source', videoGrande);
+    let heroTocava = false;
+    btnAmpliar.addEventListener('click', () => {
+      if (!fonte.getAttribute('src')) { fonte.src = fonte.dataset.src; videoGrande.preload = 'auto'; videoGrande.load(); }
+      heroTocava = !video.paused;
+      video.pause();
+      const inicio = video.currentTime || 0;
+      const comecar = () => {
+        try { videoGrande.currentTime = inicio; } catch (_) { /* ignora */ }
+        videoGrande.muted = false;
+        const p = videoGrande.play();
+        if (p && p.catch) p.catch(() => { videoGrande.muted = true; videoGrande.play().catch(() => {}); });
+      };
+      if (videoGrande.readyState >= 1) comecar(); else videoGrande.addEventListener('loadedmetadata', comecar, { once: true });
+      if (typeof modal.showModal === 'function') modal.showModal(); else modal.setAttribute('open', '');
+      if (lenis) lenis.stop();
+      root.classList.add('travado');
+    });
+    const fechar = () => { if (modal.open) modal.close(); };
+    $('.video-fechar', modal).addEventListener('click', fechar);
+    modal.addEventListener('click', (e) => { if (e.target === modal) fechar(); });
+    modal.addEventListener('close', () => {
+      videoGrande.pause();
+      root.classList.remove('travado');
+      if (lenis) lenis.start();
+      if (heroTocava && !pausadoPeloUsuario) tocar();
+      btnAmpliar.focus({ preventScroll: true });
+    });
+  }
+
   /* brilho ambiente: o próprio vídeo, desfocado, tinge o fundo do hero */
   const amb = $('.hero-ambiente');
   if (amb && video && mqDesk.matches && !mqReduz.matches) {
